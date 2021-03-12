@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercícios matemáticos</title>
+
+    <style>
+        #root{
+            display: flex;            
+            flex-wrap: wrap;
+            justify-content: left;
+        }        
+        .card {
+            margin: 40px 70px;
+            display: flex;
+            width: 100px;
+            font-size: 10pt;            
+        }
+
+        #btn-print, #btn-reset {
+            padding: 5px 15px;
+            background-color: black;
+            color: white;
+            cursor: pointer;
+        }
+
+        #gabarito{            
+            position: absolute;
+            top: 1050px;
+            right: 50px;
+            font-size: 5pt;
+            display: flex;
+            flex-wrap: wrap;
+            width: 70%;            
+            justify-content: left;
+            transform: rotate(180deg);             
+        }
+
+        #gabarito > div {
+            margin: 0px 5px;
+        }
+
+        label{
+            cursor: pointer;
+        }
+
+        @media print {
+            @page {margin: 0;}            
+            header {display: none}
+        }
+    </style>
+</head>
+<body>
+
+    
+    <header>
+
+        <h1>Gerador de exercícios matemáticos para impressão</h1>
+
+    <button id="btn-print" onclick="print()">Imprimir</button>
+    <button id="btn-reset" onclick="renderScreen()">Gerar Folha</button>
+
+    <label>Quantidade de contas</label>    
+    <input type="number" placeholder="Quantidade de contas" min=0 value=21 id="sheetsAmount">
+
+    <br><br>
+    <input type="checkbox" id="+" checked/>
+    <label for="+">Adição &#43;</label>
+
+    <input type="checkbox" id="-" checked/>
+    <label for="-">Subtração &#8722;</label>
+
+    <input type="checkbox" id="*" />
+    <label for="*">Multiplicação &#247;</label>
+
+    <input type="checkbox" id="/"/>
+    <label for="/">Divisão &#215;</label>
+    
+
+    </header>
+    
+
+
+
+    <div id="root"></div>
+    <div id="gabarito"></div>
+
+    
+
+    <script>
+        
+
+
+        const gabarito = (cards) => {
+
+            const reverse_dict = {
+                "&#43;": "+",
+                "&#8722;": "-",
+                "&#247;": "*",
+                "&#215;": "/"
+            };
+
+            for (let c in cards) {    
+                           
+                let ini = cards[c].search("<span>") + 9;
+                let fim = cards[c].search("</span>") - 3;
+                let expression = cards[c].substring(ini, fim);
+
+                for (var [key, value] of Object.entries(reverse_dict)) {
+                    if (expression.search(key) > -1)
+                    {
+                        expression = expression.replace(key, reverse_dict[key])
+                        break;
+                    }                        
+                }
+
+                let result = eval(expression);
+
+                let aux = cards[c]
+                cards[c] = cards[c].replace(" = ", ` = ${result}`);                
+                cards[c] = cards[c].replace("card", "");
+            }            
+
+            document.getElementById("gabarito").innerHTML = cards.join(" ");
+        }
+
+        const card = (num1, num2, operator, i) => {           
+            if(num1 < num2)
+            {
+                temp = num1;
+                num1 = num2;
+                num2 = temp;
+            }
+
+            if ((operator === "&#247;" ||  operator === "&#215;") && num2 >= 100 )
+            {
+                num2 = randomInt(min=2, max=9)                
+            }
+
+            return `
+                <div class="card">
+                <span>${i+1}) ${num1} ${operator} ${num2} = </span>
+                </div>
+            `;
+            }
+
+
+        const randomInt = (min=1, max=2000) => {
+            return parseInt((Math.random() * (max-min) + min).toFixed(0));
+        }
+
+        const randomFloat = (min = 1, max = 10000, decimal=2) => {
+                return parseInt((Math.random() * (max - min) + min).toFixed(decimal));
+            }
+
+        
+        const renderScreen = () => {
+            let qnt = parseInt(document.getElementById("sheetsAmount").value);
+
+            const dict = {
+                "+": "&#43;",
+                "-": "&#8722;",
+                "*": "&#247;",
+                "/": "&#215;"
+            };
+            
+            const operators = [];
+
+            for (var [key, value] of Object.entries(dict))
+            {
+                if(document.getElementById(key).checked)
+                    operators.push(value);
+            }
+
+            if (operators.length === 0)
+            {
+                alert("Marque alguma operação");
+                return;
+            }
+            
+
+            const cards = new Array(qnt).fill(0);
+            for (let c in cards) {                
+                cards[c] = card(randomInt(), randomInt(), operators[Math.floor(Math.random() * operators.length)], parseInt(c));
+            }
+            globalCards = cards;
+
+            document.getElementById("root").innerHTML = cards.join(" ");
+            gabarito(cards);
+        }
+        
+        renderScreen();
+
+    </script>
+    
+</body>
+</html>

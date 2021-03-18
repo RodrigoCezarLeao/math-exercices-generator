@@ -7,11 +7,19 @@
     <title>Exercícios matemáticos</title>
 
     <style>
-        #root{
+        #root .sheet{
             display: flex;            
             flex-wrap: wrap;
             justify-content: left;
-        }        
+            position: relative;
+            margin-bottom: 1100px;
+        }
+
+        #root .sheet:last-child
+        {
+            margin-bottom: 0px;
+        }
+
         .card {
             margin: 40px 70px;
             display: flex;
@@ -26,16 +34,15 @@
             cursor: pointer;
         }
 
-        #gabarito{            
-            position: absolute;
-            top: 1050px;
-            right: 50px;
+        .gabarito{               
+            margin-top: 300px;         
+            margin-left: 200px;
             font-size: 5pt;
             display: flex;
             flex-wrap: wrap;
             width: 70%;            
             justify-content: left;
-            transform: rotate(180deg);             
+            /*transform: rotate(180deg);             */
         }
 
         #gabarito > div {
@@ -60,10 +67,16 @@
         <h1>Gerador de exercícios matemáticos para impressão</h1>
 
     <button id="btn-print" onclick="print()">Imprimir</button>
-    <button id="btn-reset" onclick="renderScreen()">Gerar Folha</button>
+    <button id="btn-reset" onclick="renderScreen()">Gerar Contas</button>
 
+    <br>
+    <br>
     <label>Quantidade de contas</label>    
-    <input type="number" placeholder="Quantidade de contas" min=0 value=21 id="sheetsAmount">
+    <input type="number" placeholder="Quantidade de contas" min=0 value=21 id="operationsAmount">
+    <br>
+    <br>
+    <label>Quantidade de Páginas</label>    
+    <input type="number" placeholder="Quantidade de Páginas" min=0 value=5 id="sheetsAmount">
 
     <br><br>
     <input type="checkbox" id="+" checked/>
@@ -82,16 +95,10 @@
     </header>
     
 
-
-
-    <div id="root"></div>
-    <div id="gabarito"></div>
-
+    <div id="root"></div>   
     
 
     <script>
-        
-
 
         const gabarito = (cards) => {
 
@@ -122,8 +129,8 @@
                 cards[c] = cards[c].replace(" = ", ` = ${result}`);                
                 cards[c] = cards[c].replace("card", "");
             }            
-
-            document.getElementById("gabarito").innerHTML = cards.join(" ");
+            
+            return cards;
         }
 
         const card = (num1, num2, operator, i) => {           
@@ -157,38 +164,46 @@
 
         
         const renderScreen = () => {
-            let qnt = parseInt(document.getElementById("sheetsAmount").value);
-
+            let sheetsAmount = parseInt(document.getElementById("sheetsAmount").value);
+            let qnt = parseInt(document.getElementById("operationsAmount").value);
             const dict = {
                 "+": "&#43;",
                 "-": "&#8722;",
                 "*": "&#247;",
                 "/": "&#215;"
             };
-            
+
             const operators = [];
 
-            for (var [key, value] of Object.entries(dict))
-            {
-                if(document.getElementById(key).checked)
+            for (var [key, value] of Object.entries(dict)) {
+                if (document.getElementById(key).checked)
                     operators.push(value);
             }
 
-            if (operators.length === 0)
-            {
+            if (operators.length === 0) {
                 alert("Marque alguma operação");
                 return;
             }
-            
 
-            const cards = new Array(qnt).fill(0);
-            for (let c in cards) {                
-                cards[c] = card(randomInt(), randomInt(), operators[Math.floor(Math.random() * operators.length)], parseInt(c));
+            let html = "";
+
+            for(let i=0; i<sheetsAmount; i++)
+            {
+                const cards = new Array(qnt).fill(0);
+                for (let c in cards) {
+                    cards[c] = card(randomInt(), randomInt(), operators[Math.floor(Math.random() * operators.length)], parseInt(c));
+                }
+                globalCards = cards;
+
+                html += `<div class='sheet'>`;
+                html += cards.join(" ");
+                html += "<div class='gabarito'>" + gabarito(cards) + "</div>";
+                html += `</div>`;
             }
-            globalCards = cards;
 
-            document.getElementById("root").innerHTML = cards.join(" ");
-            gabarito(cards);
+            document.getElementById("root").innerHTML = html;
+
+            
         }
         
         renderScreen();
